@@ -1,4 +1,4 @@
-#variables de entorno:
+# Variables de entorno:
 - NEXT_PUBLIC_SUPABASE_URL=
 - SUPABASE_SERVICE_ROLE_KEY=
 - NEXT_PUBLIC_SUPABASE_ANON_KEY=
