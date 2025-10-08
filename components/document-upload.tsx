@@ -121,7 +121,7 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
 
         // Enviar a n8n webhook
         const response = await fetch(
-          "https://n8n.llamasolutions.pe/webhook/43cb9c44-215e-430d-84eb-8f72113ada7f",
+          process.env.NEXT_PUBLIC_DOCUMENT_UPLOAD_WEBHOOK!,
           {
             method: "POST",
             body: formData,
@@ -395,3 +395,4 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
     </div>
   )
 }
+
