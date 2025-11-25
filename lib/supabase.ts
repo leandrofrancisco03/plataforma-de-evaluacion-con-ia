@@ -6,15 +6,25 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 const   supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-// Client-side Supabase client (for components)
-export const createSupabaseClient = () => {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables")
-    console.log("URL:", supabaseUrl)
-    console.log("ANON KEY:", supabaseAnonKey ? "✅ Present" : "❌ Missing")
-  }
+// Singleton Supabase client instance to avoid multiple GoTrueClient instances
+let supabaseClientInstance: ReturnType<typeof createClient> | null = null
 
-  return createClient(supabaseUrl, supabaseAnonKey)
+// Client-side Supabase client (for components) - singleton pattern
+export const getSupabaseClient = () => {
+  if (!supabaseClientInstance) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Missing Supabase environment variables")
+      //console.log("URL:", supabaseUrl)
+      //console.log("ANON KEY:", supabaseAnonKey ? "✅ Present" : "❌ Missing")
+    }
+    supabaseClientInstance = createClient(supabaseUrl, supabaseAnonKey)
+  }
+  return supabaseClientInstance
+}
+
+// Deprecated: use getSupabaseClient() instead
+export const createSupabaseClient = () => {
+  return getSupabaseClient()
 }
 
 // Alternative client using auth helpers (automatically handles env vars)

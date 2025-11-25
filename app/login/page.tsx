@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GraduationCap, Eye, EyeOff } from "lucide-react"
-import { createSupabaseClient } from "@/lib/supabase"
+import { getSupabaseClient } from "@/lib/supabase"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const supabase = createSupabaseClient()
+  const supabase = getSupabaseClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +27,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      console.log("🔐 Intentando login con:", email)
+      //console.log("🔐 Intentando login con:", email)
 
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -47,7 +47,7 @@ export default function LoginPage() {
       }
 
       if (data.user && data.session) {
-        console.log("👤 Usuario autenticado:", data.user.id)
+        //console.log("👤 Usuario autenticado:", data.user.id)
 
         // Verificar que el perfil del profesor existe
         const { data: professorData, error: profileError } = await supabase
@@ -62,7 +62,7 @@ export default function LoginPage() {
           return
         }
 
-        console.log("✅ Login exitoso, redirigiendo al dashboard...")
+        //console.log("✅ Login exitoso, redirigiendo al dashboard...")
         // Redirigir al dashboard después del login exitoso
         router.push("/dashboard")
       }

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { GraduationCap, Eye, EyeOff } from "lucide-react"
-import { createSupabaseClient } from "@/lib/supabase"
+import { getSupabaseClient } from "@/lib/supabase"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -32,7 +32,7 @@ export default function RegisterPage() {
   const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false)
   const router = useRouter()
 
-  const supabase = createSupabaseClient()
+  const supabase = getSupabaseClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +61,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      console.log("🚀 Iniciando registro...")
+      //console.log("🚀 Iniciando registro...")
 
       // Paso 1: Registrar usuario en Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -91,7 +91,7 @@ export default function RegisterPage() {
         return
       }
 
-      console.log("👤 Usuario creado:", authData.user.id)
+      //console.log("👤 Usuario creado:", authData.user.id)
 
       // Verificar si necesita confirmación de email
       if (!authData.session) {

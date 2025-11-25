@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { createSupabaseClient } from "@/lib/supabase"
+import { getSupabaseClient } from "@/lib/supabase"
 
 export default function AuthDebug() {
   const [authUser, setAuthUser] = useState<any>(null)
@@ -25,7 +25,7 @@ export default function AuthDebug() {
 
   const checkAuth = async () => {
     try {
-      const supabase = createSupabaseClient()
+      const supabase = getSupabaseClient()
 
       // Verificar usuario autenticado
       const {
@@ -52,7 +52,7 @@ export default function AuthDebug() {
 
   const testConnection = async () => {
     try {
-      const supabase = createSupabaseClient()
+      const supabase = getSupabaseClient()
       const { data, error } = await supabase.from("professor").select("count").limit(1)
 
       if (error) {

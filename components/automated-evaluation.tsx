@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Upload, FileText, Brain, BarChart3, Target, Database, Settings, Trash2, X } from "lucide-react"
+import { Upload, FileText, Brain, Target, Database, Settings, Trash2, X } from "lucide-react"
 
 export default function AutomatedEvaluation() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -63,7 +63,7 @@ export default function AutomatedEvaluation() {
     if (newFiles.length > 0) {
       setSelectedFiles((prevFiles) => [...prevFiles, ...newFiles])
       setError("")
-      console.log(`✅ ${newFiles.length} archivo(s) agregado(s). Total: ${selectedFiles.length + newFiles.length}`)
+      //console.log(`✅ ${newFiles.length} archivo(s) agregado(s). Total: ${selectedFiles.length + newFiles.length}`)
     }
 
     // Limpiar el input para permitir seleccionar los mismos archivos de nuevo si es necesario
@@ -112,7 +112,7 @@ export default function AutomatedEvaluation() {
     setEvaluationResults(null)
 
     try {
-      console.log(`🚀 Iniciando evaluación automatizada de ${selectedFiles.length} archivo(s)...`)
+      //console.log(`🚀 Iniciando evaluación automatizada de ${selectedFiles.length} archivo(s)...`)
 
       // Crear FormData para enviar los datos
       const formData = new FormData()
@@ -132,8 +132,8 @@ export default function AutomatedEvaluation() {
       const fileNames = selectedFiles.map((file) => file.name)
       formData.append("file_names", JSON.stringify(fileNames))
 
-      console.log("📤 Enviando datos al webhook de evaluación...")
-      console.log(`📁 Archivos: ${fileNames.join(", ")}`)
+      //console.log("📤 Enviando datos al webhook de evaluación...")
+      //console.log(`📁 Archivos: ${fileNames.join(", ")}`)
 
       // Simular progreso mientras se procesa
       const progressInterval = setInterval(() => {
@@ -160,19 +160,19 @@ export default function AutomatedEvaluation() {
       }
 
       const result = await response.json()
-      console.log("✅ Evaluación procesada:", result)
+      //console.log("✅ Evaluación procesada:", result)
 
       setProcessingProgress(100)
       setSuccess(`✅ Evaluación de ${selectedFiles.length} archivo(s) completada exitosamente`)
 
       // Procesar la respuesta JSON del webhook
       if (Array.isArray(result) && result.length > 0) {
-        console.log(`📊 Procesando ${result.length} resultado(s) del webhook...`)
+        //console.log(`📊 Procesando ${result.length} resultado(s) del webhook...`)
 
         // Procesar cada resultado del array
         const processedResults = result.map((item, index) => {
           const output = item.output || ""
-          console.log(`📝 Procesando resultado ${index + 1}:`, output.substring(0, 100) + "...")
+          //console.log(`📝 Procesando resultado ${index + 1}:`, output.substring(0, 100) + "...")
 
           // Extraer información del output usando regex más robustos
           const studentMatch = output.match(/Estudiante:\s*(.+?)(?:\n|$)/i)
@@ -215,7 +215,7 @@ export default function AutomatedEvaluation() {
         const reviewCount = processedResults.filter((r) => r.status === "review").length
         const attentionCount = processedResults.filter((r) => r.status === "attention").length
 
-        console.log(`📈 Estadísticas: ${totalEvaluations} evaluaciones, promedio: ${averageScore.toFixed(1)}`)
+        //console.log(`📈 Estadísticas: ${totalEvaluations} evaluaciones, promedio: ${averageScore.toFixed(1)}`)
 
         setEvaluationResults({
           totalEvaluations: totalEvaluations,
@@ -232,7 +232,7 @@ export default function AutomatedEvaluation() {
         })
       } else if (result && typeof result === "object") {
         // Manejar respuesta única (no array)
-        console.log("📝 Procesando respuesta única...")
+        //console.log("📝 Procesando respuesta única...")
 
         const output = result.output || JSON.stringify(result)
         const studentMatch = output.match(/Estudiante:\s*(.+?)(?:\n|$)/i)
@@ -269,7 +269,7 @@ export default function AutomatedEvaluation() {
         })
       } else {
         // Fallback para respuestas inesperadas
-        console.log("⚠️ Formato de respuesta no reconocido:", result)
+        //console.log("⚠️ Formato de respuesta no reconocido:", result)
         setEvaluationResults({
           totalEvaluations: 1,
           totalFiles: selectedFiles.length,
@@ -304,20 +304,20 @@ export default function AutomatedEvaluation() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Upload and Configuration */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-4 md:space-y-6">
+      {/* Upload and Configuration - responsive grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <Card className="lg:col-span-2 bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
-          <CardHeader>
-            <CardTitle className="flex items-center text-[#8b4513]">
-              <Upload className="mr-2 h-5 w-5" />
-              Carga de Evaluaciones
+          <CardHeader className="px-4 md:px-6">
+            <CardTitle className="flex items-center text-base md:text-lg text-[#8b4513]">
+              <Upload className="mr-2 h-4 md:h-5 w-4 md:w-5" />
+              <span className="text-balance">Carga de Evaluaciones</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs md:text-sm">
               Sube múltiples exámenes, prácticas o proyectos para evaluación automatizada con RAG
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-4 md:px-6 space-y-4">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
             )}
@@ -327,9 +327,9 @@ export default function AutomatedEvaluation() {
             )}
 
             <div className="space-y-2">
-              <Label className="text-[#8b4513]">Tipo de Evaluación *</Label>
+              <Label className="text-xs md:text-sm text-[#8b4513]">Tipo de Evaluación *</Label>
               <Select value={evaluationType} onValueChange={setEvaluationType}>
-                <SelectTrigger className="border-[#fedebb] focus:border-[#8b4513]">
+                <SelectTrigger className="border-[#fedebb] focus:border-[#8b4513] text-xs md:text-sm">
                   <SelectValue placeholder="Selecciona el tipo de evaluación" />
                 </SelectTrigger>
                 <SelectContent>
@@ -343,10 +343,10 @@ export default function AutomatedEvaluation() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[#8b4513]">Criterios de Evaluación Específicos *</Label>
+              <Label className="text-xs md:text-sm text-[#8b4513]">Criterios de Evaluación Específicos *</Label>
               <Textarea
-                placeholder="Describe los criterios específicos para esta evaluación (ej: precisión en cálculos, metodología aplicada, claridad en explicaciones, uso correcto de fórmulas, etc.)"
-                className="border-[#fedebb] focus:border-[#8b4513]"
+                placeholder="Describe los criterios específicos para esta evaluación..."
+                className="border-[#fedebb] focus:border-[#8b4513] text-xs md:text-sm"
                 rows={4}
                 value={evaluationCriteria}
                 onChange={(e) => setEvaluationCriteria(e.target.value)}
@@ -357,10 +357,10 @@ export default function AutomatedEvaluation() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[#8b4513]">Archivos de Evaluaciones *</Label>
+              <Label className="text-xs md:text-sm text-[#8b4513]">Archivos de Evaluaciones *</Label>
 
-              {/* Upload Area */}
-              <div className="border-2 border-dashed border-[#fedebb] rounded-lg p-6 text-center">
+              {/* Upload Area - responsive padding */}
+              <div className="border-2 border-dashed border-[#fedebb] rounded-lg p-4 md:p-6 text-center">
                 <input
                   type="file"
                   id="evaluation-upload"
@@ -369,54 +369,55 @@ export default function AutomatedEvaluation() {
                   accept=".pdf"
                   multiple
                 />
-                <div className="flex flex-col items-center space-y-4">
-                  <Upload className="h-12 w-12 text-[#8b4513]/50" />
+                <div className="flex flex-col items-center space-y-3 md:space-y-4">
+                  <Upload className="h-8 md:h-12 w-8 md:w-12 text-[#8b4513]/50" />
                   <div>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => document.getElementById("evaluation-upload")?.click()}
-                      className="border-[#8b4513] text-[#8b4513] hover:bg-[#fedebb]/50"
+                      className="border-[#8b4513] text-[#8b4513] hover:bg-[#fedebb]/50 text-xs md:text-sm"
                     >
-                      <Upload className="mr-2 h-4 w-4" />
-                      {selectedFiles.length > 0 ? "Agregar Más Archivos PDF" : "Seleccionar Archivos PDF"}
+                      <Upload className="mr-2 h-3 md:h-4 w-3 md:w-4" />
+                      {selectedFiles.length > 0 ? "Agregar Más" : "Seleccionar"}
                     </Button>
-                    <p className="text-sm text-[#8b4513]/70 mt-2">
-                      Selecciona múltiples PDFs manteniendo presionado Ctrl/Cmd
+                    <p className="text-xs md:text-sm text-[#8b4513]/70 mt-2">
+                      {selectedFiles.length > 0 ? "Selecciona más PDFs o" : "Selecciona PDFs o"} arrastra aquí
                     </p>
-                    <p className="text-xs text-[#8b4513]/50 mt-1">
-                      Máximo 10 archivos • 50MB por archivo • Solo formato PDF
-                    </p>
+                    <p className="text-xs text-[#8b4513]/50 mt-1">Máximo 10 • 50MB c/u • Solo PDF</p>
                   </div>
                 </div>
               </div>
 
-              {/* Selected Files List */}
+              {/* Selected Files List - responsive with overflow */}
               {selectedFiles.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-[#8b4513]">Archivos Seleccionados ({selectedFiles.length})</h4>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-[#8b4513]/70">Total: {formatFileSize(getTotalSize())}</span>
+                <div className="space-y-2 md:space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <h4 className="font-medium text-xs md:text-sm text-[#8b4513]">Archivos ({selectedFiles.length})</h4>
+                    <div className="flex items-center space-x-2 text-xs md:text-sm">
+                      <span className="text-[#8b4513]/70">{formatFileSize(getTotalSize())}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={removeAllFiles}
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-red-600 hover:bg-red-50 text-xs md:text-sm"
                       >
-                        <X className="h-4 w-4 mr-1" />
-                        Limpiar todo
+                        <X className="h-3 md:h-4 w-3 md:w-4 mr-1" />
+                        <span className="hidden sm:inline">Limpiar</span>
                       </Button>
                     </div>
                   </div>
 
-                  <div className="max-h-60 overflow-y-auto space-y-2">
+                  <div className="max-h-40 md:max-h-60 overflow-y-auto space-y-2">
                     {selectedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-[#fedebb]/20 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <FileText className="h-5 w-5 text-[#8b4513]" />
-                          <div>
-                            <p className="text-sm font-medium text-[#8b4513]">{file.name}</p>
+                      <div
+                        key={index}
+                        className="flex items-center justify-between gap-2 p-2 md:p-3 bg-[#fedebb]/20 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+                          <FileText className="h-4 md:h-5 w-4 md:w-5 text-[#8b4513] flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs md:text-sm font-medium text-[#8b4513] truncate">{file.name}</p>
                             <p className="text-xs text-[#8b4513]/70">{formatFileSize(file.size)}</p>
                           </div>
                         </div>
@@ -424,9 +425,9 @@ export default function AutomatedEvaluation() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(index)}
-                          className="text-red-600 hover:bg-red-50"
+                          className="text-red-600 hover:bg-red-50 flex-shrink-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 md:h-4 w-3 md:w-4" />
                         </Button>
                       </div>
                     ))}
@@ -455,25 +456,28 @@ export default function AutomatedEvaluation() {
             <Button
               onClick={handleEvaluate}
               disabled={selectedFiles.length === 0 || !evaluationType || !evaluationCriteria.trim() || isProcessing}
-              className="w-full bg-[#8b4513] hover:bg-[#8b4513]/90 text-white"
+              className="w-full bg-[#8b4513] hover:bg-[#8b4513]/90 text-white text-xs md:text-sm py-2 md:py-3"
               size="lg"
             >
               {isProcessing ? (
                 <>
-                  <Brain className="mr-2 h-4 w-4 animate-spin" />
-                  Procesando {selectedFiles.length} Evaluación(es)...
+                  <Brain className="mr-2 h-4 md:h-5 w-4 md:w-5 animate-spin" />
+                  <span className="hidden sm:inline">Procesando...</span>
                 </>
               ) : (
                 <>
-                  <Brain className="mr-2 h-4 w-4" />
-                  Evaluar {selectedFiles.length > 0 ? `${selectedFiles.length} Archivo(s)` : "Documentos"}
+                  <Brain className="mr-2 h-4 md:h-5 w-4 md:w-5" />
+                  <span className="hidden sm:inline">
+                    Evaluar {selectedFiles.length > 0 ? `${selectedFiles.length}` : ""}
+                  </span>
+                  <span className="sm:hidden">Evaluar</span>
                 </>
               )}
             </Button>
           </CardContent>
         </Card>
 
-        {/* RAG Configuration */}
+        {/* Configuration Panel - responsive */}
         <Card className="bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
           <CardHeader>
             <CardTitle className="text-[#8b4513]">Sistema de Evaluación IA</CardTitle>
@@ -526,151 +530,60 @@ export default function AutomatedEvaluation() {
         </Card>
       </div>
 
-      {/* Results Section */}
-      <Card className="bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
-        <CardHeader>
-          <CardTitle className="text-[#8b4513]">Resultados de Evaluación Automatizada</CardTitle>
-          <CardDescription>Análisis detallado generado por el sistema de IA</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {evaluationResults ? (
-            <div className="space-y-6">
-              {/* Summary Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
-                  <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.totalFiles}</div>
-                  <div className="text-sm text-[#8b4513]/70">Archivos Procesados</div>
-                </div>
-                <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
-                  <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.totalEvaluations}</div>
-                  <div className="text-sm text-[#8b4513]/70">Evaluaciones Totales</div>
-                </div>
-                <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
-                  <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.averageScore}</div>
-                  <div className="text-sm text-[#8b4513]/70">Promedio (/20)</div>
-                </div>
-                <div className="text-center p-4 bg-green-100 rounded-lg">
-                  <div className="text-2xl font-bold text-green-800">{evaluationResults.approvedCount}</div>
-                  <div className="text-sm text-green-700">Aprobados (≥16)</div>
-                </div>
-                <div className="text-center p-4 bg-yellow-100 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-800">{evaluationResults.reviewCount}</div>
-                  <div className="text-sm text-yellow-700">A Revisar (12-15)</div>
-                </div>
-                <div className="text-center p-4 bg-red-100 rounded-lg">
-                  <div className="text-2xl font-bold text-red-800">{evaluationResults.attentionCount}</div>
-                  <div className="text-sm text-red-700">Atención (&lt;12)</div>
-                </div>
-              </div>
+      {/* Results Section - responsive grid */}
+      {evaluationResults && (
+        <div className="space-y-4 md:space-y-6">
+          {/* Stats Grid - responsive */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
+              <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.totalFiles}</div>
+              <div className="text-sm text-[#8b4513]/70">Archivos Procesados</div>
+            </div>
+            <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
+              <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.totalEvaluations}</div>
+              <div className="text-sm text-[#8b4513]/70">Evaluaciones Totales</div>
+            </div>
+            <div className="text-center p-4 bg-[#fedebb]/20 rounded-lg">
+              <div className="text-2xl font-bold text-[#8b4513]">{evaluationResults.averageScore}</div>
+              <div className="text-sm text-[#8b4513]/70">Promedio (/20)</div>
+            </div>
+            <div className="text-center p-4 bg-green-100 rounded-lg">
+              <div className="text-2xl font-bold text-green-800">{evaluationResults.approvedCount}</div>
+              <div className="text-sm text-green-700">Aprobados (≥16)</div>
+            </div>
+            <div className="text-center p-4 bg-yellow-100 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-800">{evaluationResults.reviewCount}</div>
+              <div className="text-sm text-yellow-700">A Revisar (12-15)</div>
+            </div>
+            <div className="text-center p-4 bg-red-100 rounded-lg">
+              <div className="text-2xl font-bold text-red-800">{evaluationResults.attentionCount}</div>
+              <div className="text-sm text-red-700">Atención (&lt;12)</div>
+            </div>
+          </div>
 
-              {/* Individual Results */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-[#8b4513]">Resultados Individuales</h4>
+          {/* Individual Results - responsive */}
+          <Card className="bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
+            <CardHeader className="px-4 md:px-6">
+              <CardTitle className="text-base md:text-lg text-[#8b4513]">Resultados Detallados</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 md:px-6">
+              <div className="space-y-3 md:space-y-4">
                 {evaluationResults.individualResults.map((result: any, i: number) => (
-                  <div key={i} className="border border-[#fedebb]/50 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-[#fedebb]/30 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-semibold text-[#8b4513]">
-                            {typeof result.score === "number"
-                              ? `${result.score}${result.maxScore ? `/${result.maxScore}` : ""}`
-                              : result.score}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-[#8b4513]">{result.name}</p>
-                          {typeof result.score === "number" && result.maxScore && (
-                            <p className="text-xs text-[#8b4513]/70">
-                              Porcentaje: {result.percentage}% • Nota: {result.score}/{result.maxScore}
-                            </p>
-                          )}
-                        </div>
+                  <div key={i} className="p-3 md:p-4 border border-[#fedebb]/50 rounded-lg">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4">
+                      <div className="flex-1">
+                        <p className="font-medium text-xs md:text-sm text-[#8b4513]">{result.name}</p>
+                        <p className="text-xs md:text-sm text-[#8b4513]/70 mt-1 break-words">{result.feedback}</p>
                       </div>
-                      <Badge
-                        variant={
-                          result.status === "approved"
-                            ? "default"
-                            : result.status === "review"
-                              ? "secondary"
-                              : "destructive"
-                        }
-                        className={
-                          result.status === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : result.status === "review"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                        }
-                      >
-                        {result.status === "approved"
-                          ? "Aprobado"
-                          : result.status === "review"
-                            ? "Revisar"
-                            : "Atención"}
-                      </Badge>
+                      <Badge className="w-fit text-xs md:text-sm">{result.percentage}%</Badge>
                     </div>
-
-                    {/* Feedback detallado */}
-                    <div className="bg-[#fedebb]/10 rounded-lg p-3">
-                      <h5 className="text-sm font-medium text-[#8b4513] mb-2">Retroalimentación:</h5>
-                      <p className="text-sm text-[#8b4513]/80 whitespace-pre-wrap">{result.feedback}</p>
-                    </div>
-
-                    {/* Mostrar output completo si está disponible */}
-                    {result.rawOutput && (
-                      <details className="text-xs">
-                        <summary className="cursor-pointer text-[#8b4513]/70 hover:text-[#8b4513]">
-                          Ver análisis completo
-                        </summary>
-                        <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto whitespace-pre-wrap">
-                          {result.rawOutput}
-                        </pre>
-                      </details>
-                    )}
                   </div>
                 ))}
               </div>
-
-              <div className="flex space-x-3">
-                <Button className="bg-[#8b4513] hover:bg-[#8b4513]/90 text-white">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Exportar Resultados
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-[#8b4513] text-[#8b4513] hover:bg-[#fedebb]/50 bg-transparent"
-                >
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  Ver Análisis Detallado
-                </Button>
-                {evaluationResults.rawResponse && (
-                  <details className="inline-block">
-                    <summary className="cursor-pointer">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-[#8b4513] text-[#8b4513] hover:bg-[#fedebb]/50 bg-transparent"
-                      >
-                        Ver JSON Completo
-                      </Button>
-                    </summary>
-                    <div className="absolute z-10 mt-2 p-4 bg-white border border-[#fedebb] rounded-lg shadow-lg max-w-2xl max-h-96 overflow-auto">
-                      <pre className="text-xs">{JSON.stringify(evaluationResults.rawResponse, null, 2)}</pre>
-                    </div>
-                  </details>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Brain className="h-12 w-12 text-[#8b4513]/50 mx-auto mb-4" />
-              <p className="text-[#8b4513]/70">
-                Configura los parámetros y sube archivos para comenzar la evaluación automatizada
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
