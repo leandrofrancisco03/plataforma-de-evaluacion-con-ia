@@ -69,7 +69,7 @@ export default function DashboardPage() {
           router.push("/login");
         } else {
           //console.log("✅ Professor data loaded:", professorData)
-          setProfessor(professorData);
+          setProfessor(professorData as unknown as Professor);
         }
       } catch (error) {
         console.error("💥 Error in getUser:", error);

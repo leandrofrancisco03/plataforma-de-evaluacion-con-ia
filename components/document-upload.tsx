@@ -73,11 +73,13 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
         return;
       }
 
+      const professorId = professor.id;
+
       // Obtener documentos del profesor desde Supabase
       const { data, error: fetchError } = await supabase
         .from("documents")
         .select("*")
-        .eq("professor_id", professor.id)
+        .eq("professor_id", professorId)
         .order("created_at", { ascending: false });
 
       if (fetchError) {
@@ -202,20 +204,24 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
       //console.log(`✅ Documentos procesados:`, result)
 
       // Guardar cada documento en Supabase
-      for (const file of selectedFiles) {
-        const { error: insertError } = await supabase.from("documents").insert([
-          {
-            professor_id: professor?.id,
-            filename: file.name,
-            created_at: new Date().toISOString(),
-          },
-        ]);
+      if (professor?.id) {
+        for (const file of selectedFiles) {
+          const { error: insertError } = await supabase
+            .from("documents")
+            .insert([
+              {
+                professor_id: professor.id,
+                filename: file.name,
+                created_at: new Date().toISOString(),
+              },
+            ]);
 
-        if (insertError) {
-          console.error(
-            `Error al guardar ${file.name} en Supabase:`,
-            insertError
-          );
+          if (insertError) {
+            console.error(
+              `Error al guardar ${file.name} en Supabase:`,
+              insertError
+            );
+          }
         }
       }
 
@@ -226,21 +232,23 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
       setSelectedFiles([]);
 
       // Recargar documentos desde Supabase
-      const { data: updatedDocs, error: fetchError } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("professor_id", professor?.id)
-        .order("created_at", { ascending: false });
+      if (professor?.id) {
+        const { data: updatedDocs, error: fetchError } = await supabase
+          .from("documents")
+          .select("*")
+          .eq("professor_id", professor.id)
+          .order("created_at", { ascending: false });
 
-      if (!fetchError && updatedDocs) {
-        const documents: UploadedDocument[] = updatedDocs.map((doc: any) => ({
-          id: doc.id,
-          name: doc.filename,
-          size: 0,
-          uploadedAt: new Date(doc.created_at).toLocaleString(),
-          status: "completed",
-        }));
-        setUploadedDocuments(documents);
+        if (!fetchError && updatedDocs) {
+          const documents: UploadedDocument[] = updatedDocs.map((doc: any) => ({
+            id: doc.id,
+            name: doc.filename,
+            size: 0,
+            uploadedAt: new Date(doc.created_at).toLocaleString(),
+            status: "completed",
+          }));
+          setUploadedDocuments(documents);
+        }
       }
     } catch (error) {
       console.error("❌ Error en upload:", error);
