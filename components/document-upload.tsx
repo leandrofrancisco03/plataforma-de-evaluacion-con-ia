@@ -253,7 +253,7 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
 
   const removeDocument = async (id: string) => {
     try {
-      console.log(`🗑️ Intentando eliminar documento con ID: ${id}`);
+      //console.log(`🗑️ Intentando eliminar documento con ID: ${id}`);
 
       // Remover de la UI inmediatamente
       setUploadedDocuments((prev) => prev.filter((doc) => doc.id !== id));
@@ -265,7 +265,7 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
         .eq("id", id)
         .select(); // Agregar select para obtener feedback
 
-      console.log("Delete response:", { data, error });
+      //console.log("Delete response:", { data, error });
 
       if (error) {
         console.error("Error al eliminar documento:", error);
@@ -273,7 +273,7 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
         // Recargar documentos si hay error para revertir cambios
         await loadDocuments();
       } else {
-        console.log("✅ Documento eliminado exitosamente");
+        //console.log("✅ Documento eliminado exitosamente");
         setSuccess("✅ Documento eliminado exitosamente");
         setTimeout(() => setSuccess(""), 3000);
         // Recargar documentos para confirmar
