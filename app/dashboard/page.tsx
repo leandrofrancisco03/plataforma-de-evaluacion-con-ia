@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   GraduationCap,
   Database,
@@ -19,63 +19,67 @@ import {
   Brain,
   Menu,
   X,
-} from "lucide-react"
-import { useRouter } from "next/navigation"
-import { getSupabaseClient } from "@/lib/supabase"
-import DocumentUpload from "@/components/document-upload"
-import AutomatedEvaluation from "@/components/automated-evaluation"
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { getSupabaseClient } from "@/lib/supabase";
+import DocumentUpload from "@/components/document-upload";
+import AutomatedEvaluation from "@/components/automated-evaluation";
 
 interface Professor {
-  id: string
-  email: string
-  first_name: string
-  last_name: string
-  school: string
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  school: string;
 }
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [professor, setProfessor] = useState<Professor | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const supabase = getSupabaseClient()
-  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("overview");
+  const [professor, setProfessor] = useState<Professor | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const supabase = getSupabaseClient();
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
       try {
         const {
           data: { user },
-        } = await supabase.auth.getUser()
+        } = await supabase.auth.getUser();
 
         if (!user) {
           //console.log("❌ No user found, redirecting to login")
-          router.push("/login")
-          return
+          router.push("/login");
+          return;
         }
 
         //console.log("👤 User found:", user.id)
 
         // Obtener datos del profesor
-        const { data: professorData, error } = await supabase.from("professor").select("*").eq("id", user.id).single()
+        const { data: professorData, error } = await supabase
+          .from("professor")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
         if (error) {
-          console.error("❌ Error fetching professor:", error)
-          router.push("/login")
+          console.error("❌ Error fetching professor:", error);
+          router.push("/login");
         } else {
           //console.log("✅ Professor data loaded:", professorData)
-          setProfessor(professorData)
+          setProfessor(professorData);
         }
       } catch (error) {
-        console.error("💥 Error in getUser:", error)
-        router.push("/login")
+        console.error("💥 Error in getUser:", error);
+        router.push("/login");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    getUser()
+    getUser();
 
     // Escuchar cambios en el estado de autenticación
     const {
@@ -84,41 +88,41 @@ export default function DashboardPage() {
       //console.log("🔄 Auth state changed:", event, session?.user?.id)
 
       if (event === "SIGNED_OUT") {
-        setProfessor(null)
-        router.push("/")
+        setProfessor(null);
+        router.push("/");
       } else if (event === "SIGNED_IN" && session?.user) {
         // Recargar datos del profesor si se inicia sesión
-        getUser()
+        getUser();
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [supabase, router])
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true)
+    setIsLoggingOut(true);
     try {
       //console.log("🚪 Cerrando sesión...")
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.error("❌ Error al cerrar sesión:", error)
+        console.error("❌ Error al cerrar sesión:", error);
       } else {
         //console.log("✅ Sesión cerrada exitosamente")
         // La redirección se maneja en el listener de onAuthStateChange
       }
     } catch (error) {
-      console.error("💥 Error inesperado al cerrar sesión:", error)
+      console.error("💥 Error inesperado al cerrar sesión:", error);
     } finally {
-      setIsLoggingOut(false)
+      setIsLoggingOut(false);
     }
-  }
+  };
 
   const sidebarItems = [
     { id: "overview", label: "Resumen General", icon: BarChart3 },
     { id: "documents", label: "Base de Conocimiento", icon: Database },
     { id: "evaluation", label: "Evaluación Automatizada", icon: Brain },
-  ]
+  ];
 
   if (isLoading) {
     return (
@@ -128,7 +132,7 @@ export default function DashboardPage() {
           <div className="text-[#8b4513]">Cargando dashboard...</div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!professor) {
@@ -136,17 +140,20 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-[#fedebb] to-[#f5d5a8] flex items-center justify-center">
         <div className="text-center">
           <div className="text-[#8b4513] mb-4">Error al cargar el perfil</div>
-          <Button onClick={() => router.push("/login")} className="bg-[#8b4513] hover:bg-[#8b4513]/90 text-white">
+          <Button
+            onClick={() => router.push("/login")}
+            className="bg-[#8b4513] hover:bg-[#8b4513]/90 text-white"
+          >
             Volver al login
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
-  }
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
 
   const getSchoolDisplayName = (school: string) => {
     const schoolMap: { [key: string]: string } = {
@@ -154,9 +161,9 @@ export default function DashboardPage() {
       "ingenieria electronica": "Ing. Electrónica",
       "ingenieria mecatronica": "Ing. Mecatrónica",
       "ingenieria de telecomunicaciones": "Ing. Telecomunicaciones",
-    }
-    return schoolMap[school] || school
-  }
+    };
+    return schoolMap[school] || school;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fedebb] to-[#f5d5a8]">
@@ -166,13 +173,21 @@ export default function DashboardPage() {
           <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
             <GraduationCap className="h-6 sm:h-8 w-6 sm:w-8 text-[#8b4513] flex-shrink-0" />
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-xl font-bold text-[#8b4513] truncate">FIEI Evaluación IA</h1>
-              <p className="text-xs sm:text-sm text-[#8b4513]/70 truncate">Panel Docente</p>
+              <h1 className="text-sm sm:text-xl font-bold text-[#8b4513] truncate">
+                FIEI Evaluación IA
+              </h1>
+              <p className="text-xs sm:text-sm text-[#8b4513]/70 truncate">
+                Panel Docente
+              </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <Button variant="ghost" size="sm" className="text-[#8b4513] hidden sm:flex">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[#8b4513] hidden sm:flex"
+            >
               <Bell className="h-5 w-5" />
             </Button>
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
@@ -185,7 +200,9 @@ export default function DashboardPage() {
               <div className="font-medium text-[#8b4513]">
                 {professor.first_name} {professor.last_name}
               </div>
-              <div className="text-[#8b4513]/70">{getSchoolDisplayName(professor.school)}</div>
+              <div className="text-[#8b4513]/70">
+                {getSchoolDisplayName(professor.school)}
+              </div>
             </div>
 
             <Button
@@ -194,7 +211,11 @@ export default function DashboardPage() {
               className="md:hidden text-[#8b4513]"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {sidebarOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -220,8 +241,13 @@ export default function DashboardPage() {
                   <h3 className="font-semibold text-xs sm:text-sm text-[#8b4513]">
                     {professor.first_name} {professor.last_name}
                   </h3>
-                  <p className="text-xs text-[#8b4513]/70">{getSchoolDisplayName(professor.school)}</p>
-                  <Badge variant="secondary" className="text-xs bg-[#fedebb]/50 text-[#8b4513] mt-1">
+                  <p className="text-xs text-[#8b4513]/70">
+                    {getSchoolDisplayName(professor.school)}
+                  </p>
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-[#fedebb]/50 text-[#8b4513] mt-1"
+                  >
                     Participante Investigación
                   </Badge>
                 </div>
@@ -230,23 +256,25 @@ export default function DashboardPage() {
 
             <nav className="space-y-2">
               {sidebarItems.map((item) => {
-                const Icon = item.icon
+                const Icon = item.icon;
                 return (
                   <Button
                     key={item.id}
                     variant={activeTab === item.id ? "default" : "ghost"}
                     className={`w-full justify-start text-xs sm:text-sm ${
-                      activeTab === item.id ? "bg-[#8b4513] text-white" : "text-[#8b4513] hover:bg-[#fedebb]/50"
+                      activeTab === item.id
+                        ? "bg-[#8b4513] text-white"
+                        : "text-[#8b4513] hover:bg-[#fedebb]/50"
                     }`}
                     onClick={() => {
-                      setActiveTab(item.id)
-                      setSidebarOpen(false)
+                      setActiveTab(item.id);
+                      setSidebarOpen(false);
                     }}
                   >
                     <Icon className="mr-2 h-4 w-4" />
                     {item.label}
                   </Button>
-                )
+                );
               })}
             </nav>
 
@@ -270,7 +298,9 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">Bienvenido, {professor.first_name}</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                    Bienvenido, {professor.first_name}
+                  </h2>
                   <p className="text-xs sm:text-sm text-[#8b4513]/70">
                     Efecto de la IA en el desempeño docente - FIEI UNFV 2025
                   </p>
@@ -287,12 +317,18 @@ export default function DashboardPage() {
                   <CardHeader className="pb-2 p-4 sm:p-6">
                     <div className="flex items-center space-x-2">
                       <Clock className="h-5 w-5 sm:h-5 sm:w-5 text-[#8b4513]" />
-                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">Eficiencia en Calificación</CardTitle>
+                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">
+                        Eficiencia en Calificación
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">-78%</div>
-                    <p className="text-xs text-green-600">Reducción en tiempo</p>
+                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                      -78%
+                    </div>
+                    <p className="text-xs text-green-600">
+                      Reducción en tiempo
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -300,11 +336,15 @@ export default function DashboardPage() {
                   <CardHeader className="pb-2 p-4 sm:p-6">
                     <div className="flex items-center space-x-2">
                       <Target className="h-5 w-5 text-[#8b4513]" />
-                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">Calidad Retroalimentación</CardTitle>
+                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">
+                        Calidad Retroalimentación
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">+85%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                      +85%
+                    </div>
                     <p className="text-xs text-green-600">Mejora en calidad</p>
                   </CardContent>
                 </Card>
@@ -313,11 +353,15 @@ export default function DashboardPage() {
                   <CardHeader className="pb-2 p-4 sm:p-6">
                     <div className="flex items-center space-x-2">
                       <Users className="h-5 w-5 text-[#8b4513]" />
-                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">Carga Administrativa</CardTitle>
+                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">
+                        Carga Administrativa
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">-65%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                      -65%
+                    </div>
                     <p className="text-xs text-green-600">Reducción de carga</p>
                   </CardContent>
                 </Card>
@@ -326,11 +370,15 @@ export default function DashboardPage() {
                   <CardHeader className="pb-2 p-4 sm:p-6">
                     <div className="flex items-center space-x-2">
                       <Zap className="h-5 w-5 text-[#8b4513]" />
-                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">Adopción Tecnológica</CardTitle>
+                      <CardTitle className="text-xs sm:text-sm text-[#8b4513]/70">
+                        Adopción Tecnológica
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">92%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                      92%
+                    </div>
                     <p className="text-xs text-green-600">Tasa de adopción</p>
                   </CardContent>
                 </Card>
@@ -340,31 +388,47 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <Card className="bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
                   <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="text-sm sm:text-base text-[#8b4513]">Fases de la Investigación</CardTitle>
+                    <CardTitle className="text-sm sm:text-base text-[#8b4513]">
+                      Fases de la Investigación
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-[#8b4513]">Fase 1: Diagnóstico</span>
-                      <Badge className="bg-green-100 text-green-800 text-xs">Completado</Badge>
+                      <span className="text-[#8b4513]">
+                        Fase 1: Diagnóstico
+                      </span>
+                      <Badge className="bg-green-100 text-green-800 text-xs">
+                        Completado
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-[#8b4513]">Fase 2: Implementación</span>
-                      <Badge className="bg-blue-100 text-blue-800 text-xs">En Progreso</Badge>
+                      <span className="text-[#8b4513]">
+                        Fase 2: Implementación
+                      </span>
+                      <Badge className="bg-blue-100 text-blue-800 text-xs">
+                        En Progreso
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="text-[#8b4513]">Fase 3: Evaluación</span>
-                      <Badge className="bg-gray-100 text-gray-800 text-xs">Pendiente</Badge>
+                      <Badge className="bg-gray-100 text-gray-800 text-xs">
+                        Pendiente
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="text-[#8b4513]">Fase 4: Análisis</span>
-                      <Badge className="bg-gray-100 text-gray-800 text-xs">Pendiente</Badge>
+                      <Badge className="bg-gray-100 text-gray-800 text-xs">
+                        Pendiente
+                      </Badge>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-white/80 backdrop-blur-sm border-[#fedebb]/50">
                   <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="text-sm sm:text-base text-[#8b4513]">Tecnologías Implementadas</CardTitle>
+                    <CardTitle className="text-sm sm:text-base text-[#8b4513]">
+                      Tecnologías Implementadas
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
                     <div className="flex items-start space-x-3">
@@ -373,21 +437,31 @@ export default function DashboardPage() {
                         <p className="text-xs sm:text-sm font-medium text-[#8b4513]">
                           RAG (Retrieval-Augmented Generation)
                         </p>
-                        <p className="text-xs text-[#8b4513]/70">Consulta contextual a bases de conocimiento</p>
+                        <p className="text-xs text-[#8b4513]/70">
+                          Consulta contextual a bases de conocimiento
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <Zap className="h-5 w-5 text-[#8b4513] mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-[#8b4513]">n8n + OpenAI API</p>
-                        <p className="text-xs text-[#8b4513]/70">Automatización low-code con IA avanzada</p>
+                        <p className="text-xs sm:text-sm font-medium text-[#8b4513]">
+                          n8n + OpenAI API
+                        </p>
+                        <p className="text-xs text-[#8b4513]/70">
+                          Automatización low-code con IA avanzada
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <Database className="h-5 w-5 text-[#8b4513] mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-[#8b4513]">Base de Conocimiento Académico</p>
-                        <p className="text-xs text-[#8b4513]/70">Criterios y estándares de evaluación FIEI</p>
+                        <p className="text-xs sm:text-sm font-medium text-[#8b4513]">
+                          Base de Conocimiento Académico
+                        </p>
+                        <p className="text-xs text-[#8b4513]/70">
+                          Criterios y estándares de evaluación FIEI
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -400,9 +474,12 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">Base de Conocimiento Vectorial</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                    Base de Conocimiento Vectorial
+                  </h2>
                   <p className="text-xs sm:text-sm text-[#8b4513]/70">
-                    Carga y gestiona documentos académicos para crear tu base de conocimiento personalizada
+                    Carga y gestiona documentos académicos para crear tu base de
+                    conocimiento personalizada
                   </p>
                 </div>
               </div>
@@ -414,17 +491,19 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">Evaluación Automatizada</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#8b4513]">
+                    Evaluación Automatizada
+                  </h2>
                   <p className="text-xs sm:text-sm text-[#8b4513]/70">
                     Procesamiento inteligente de respuestas abiertas y cerradas
                   </p>
                 </div>
               </div>
-              <AutomatedEvaluation />
+              <AutomatedEvaluation professor={professor} />
             </div>
           )}
         </main>
       </div>
     </div>
-  )
+  );
 }
