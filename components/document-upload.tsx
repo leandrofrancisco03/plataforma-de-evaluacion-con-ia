@@ -2,7 +2,8 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,25 +53,60 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedDocuments, setUploadedDocuments] = useState<
     UploadedDocument[]
-  >([
-    // Documentos de ejemplo para mostrar la interfaz
-    {
-      id: "1",
-      name: "Circuitos_Electronicos_Capitulo_1.pdf",
-      size: 2.5 * 1024 * 1024,
-      uploadedAt: "2025-01-26 10:30",
-      status: "completed",
-    },
-    {
-      id: "2",
-      name: "Libro_Sistemas_Digitales.pdf",
-      size: 15.2 * 1024 * 1024,
-      uploadedAt: "2025-01-25 14:20",
-      status: "completed",
-    },
-  ]);
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Cargar documentos desde Supabase cuando el componente se monta o profesor cambia
+  useEffect(() => {
+    loadDocuments();
+  }, [professor?.id]);
+
+  const loadDocuments = async () => {
+    try {
+      setIsLoading(true);
+
+      if (!professor?.id) {
+        setUploadedDocuments([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Obtener documentos del profesor desde Supabase
+      const { data, error: fetchError } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("professor_id", professor.id)
+        .order("created_at", { ascending: false });
+
+      if (fetchError) {
+        console.error("Error al cargar documentos:", fetchError);
+        setError("Error al cargar documentos");
+        setUploadedDocuments([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Transformar datos de Supabase al formato de UploadedDocument
+      const documents: UploadedDocument[] = (data || []).map((doc: any) => ({
+        id: doc.id,
+        name: doc.filename,
+        size: 0, // No tenemos size en Supabase, lo dejamos como 0
+        uploadedAt: new Date(doc.created_at).toLocaleString(),
+        status: "completed",
+      }));
+
+      setUploadedDocuments(documents);
+      setError("");
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error en loadDocuments:", err);
+      setError("Error al cargar documentos");
+      setUploadedDocuments([]);
+      setIsLoading(false);
+    }
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -116,6 +152,15 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
     setUploadProgress(0);
 
     try {
+      // Obtener usuario actual
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("Usuario no autenticado");
+      }
+
       // Crear FormData con múltiples archivos (soporta múltiples)
       const formData = new FormData();
 
@@ -156,23 +201,47 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
       const result = await response.json();
       //console.log(`✅ Documentos procesados:`, result)
 
-      // Agregar todos los documentos a la lista
-      selectedFiles.forEach((file, index) => {
-        const newDocument: UploadedDocument = {
-          id: Date.now().toString() + index,
-          name: file.name,
-          size: file.size,
-          uploadedAt: new Date().toLocaleString(),
-          status: "completed",
-        };
-        setUploadedDocuments((prev) => [newDocument, ...prev]);
-      });
+      // Guardar cada documento en Supabase
+      for (const file of selectedFiles) {
+        const { error: insertError } = await supabase.from("documents").insert([
+          {
+            professor_id: professor?.id,
+            filename: file.name,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+
+        if (insertError) {
+          console.error(
+            `Error al guardar ${file.name} en Supabase:`,
+            insertError
+          );
+        }
+      }
 
       setUploadProgress(100);
       setSuccess(
-        `✅ ${selectedFiles.length} documento(s) cargado(s) exitosamente a la base vectorial`
+        `✅ ${selectedFiles.length} documento(s) cargado(s) exitosamente a la base vectorial y guardado(s) en base de datos`
       );
       setSelectedFiles([]);
+
+      // Recargar documentos desde Supabase
+      const { data: updatedDocs, error: fetchError } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("professor_id", professor?.id)
+        .order("created_at", { ascending: false });
+
+      if (!fetchError && updatedDocs) {
+        const documents: UploadedDocument[] = updatedDocs.map((doc: any) => ({
+          id: doc.id,
+          name: doc.filename,
+          size: 0,
+          uploadedAt: new Date(doc.created_at).toLocaleString(),
+          status: "completed",
+        }));
+        setUploadedDocuments(documents);
+      }
     } catch (error) {
       console.error("❌ Error en upload:", error);
       setError(`Error al cargar documentos: ${error}`);
@@ -182,8 +251,39 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
     }
   };
 
-  const removeDocument = (id: string) => {
-    setUploadedDocuments((prev) => prev.filter((doc) => doc.id !== id));
+  const removeDocument = async (id: string) => {
+    try {
+      console.log(`🗑️ Intentando eliminar documento con ID: ${id}`);
+
+      // Remover de la UI inmediatamente
+      setUploadedDocuments((prev) => prev.filter((doc) => doc.id !== id));
+
+      // Eliminar documento de Supabase
+      const { data, error } = await supabase
+        .from("documents")
+        .delete()
+        .eq("id", id)
+        .select(); // Agregar select para obtener feedback
+
+      console.log("Delete response:", { data, error });
+
+      if (error) {
+        console.error("Error al eliminar documento:", error);
+        setError(`Error al eliminar documento: ${error.message}`);
+        // Recargar documentos si hay error para revertir cambios
+        await loadDocuments();
+      } else {
+        console.log("✅ Documento eliminado exitosamente");
+        setSuccess("✅ Documento eliminado exitosamente");
+        setTimeout(() => setSuccess(""), 3000);
+        // Recargar documentos para confirmar
+        await loadDocuments();
+      }
+    } catch (err) {
+      console.error("Error en removeDocument:", err);
+      setError(`Error al eliminar documento: ${err}`);
+      await loadDocuments();
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -364,10 +464,12 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
             <div className="text-center py-6 md:py-8">
               <BookOpen className="h-8 md:h-12 w-8 md:w-12 text-[#8b4513]/50 mx-auto mb-3 md:mb-4" />
               <p className="text-xs md:text-sm text-[#8b4513]/70">
-                No hay documentos cargados aún
+                {isLoading
+                  ? "Cargando documentos..."
+                  : "No hay documentos cargados aún"}
               </p>
               <p className="text-xs text-[#8b4513]/50">
-                Sube tu primer PDF para comenzar
+                {!isLoading && "Sube tu primer PDF para comenzar"}
               </p>
             </div>
           ) : (
@@ -388,8 +490,6 @@ export default function DocumentUpload({ professor }: DocumentUploadProps) {
                         </h4>
                       </div>
                       <div className="flex items-center space-x-2 flex-wrap text-xs text-[#8b4513]/70 mt-1">
-                        <span>{formatFileSize(doc.size)}</span>
-                        <span>•</span>
                         <span>{doc.uploadedAt}</span>
                       </div>
                     </div>

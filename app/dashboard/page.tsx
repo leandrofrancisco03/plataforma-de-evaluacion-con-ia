@@ -305,7 +305,10 @@ export default function DashboardPage() {
                     Efecto de la IA en el desempeño docente - FIEI UNFV 2025
                   </p>
                 </div>
-                <Button className="bg-[#8b4513] hover:bg-[#8b4513]/90 text-white w-full sm:w-auto text-xs sm:text-sm">
+                <Button
+                  onClick={() => setActiveTab("evaluation")}
+                  className="bg-[#8b4513] hover:bg-[#8b4513]/90 text-white w-full sm:w-auto text-xs sm:text-sm"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Nueva Evaluación
                 </Button>
