@@ -200,13 +200,20 @@ export default function AutomatedEvaluation({
         });
       }, 800);
 
+      // Crear AbortController para timeout personalizado (10 minutos)
+      const controller = new AbortController();
+      const timeoutMs = 15 * 60 * 1000; // 10 minutos en milisegundos
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
       // Enviar a n8n webhook usando variable de entorno
       const webhookUrl = process.env.NEXT_PUBLIC_EVALUATION_WEBHOOK;
       const response = await fetch(webhookUrl as string, {
         method: "POST",
         body: formData,
+        signal: controller.signal, // Agregar signal para timeout
       });
 
+      clearTimeout(timeoutId); // Limpiar timeout si responde antes
       clearInterval(progressInterval);
 
       if (!response.ok) {
@@ -422,7 +429,16 @@ export default function AutomatedEvaluation({
       }
     } catch (error) {
       console.error("❌ Error en evaluación:", error);
-      setError(`Error al procesar la evaluación: ${error}`);
+
+      // Manejar timeout específicamente
+      if (error instanceof Error && error.name === "AbortError") {
+        setError(
+          "⏱️ Tiempo de espera agotado (15 minutos). El servidor tardó demasiado en responder. Por favor intenta nuevamente o contacta soporte si el problema persiste."
+        );
+      } else {
+        setError(`Error al procesar la evaluación: ${error}`);
+      }
+
       setProcessingProgress(0);
     } finally {
       setIsProcessing(false);
